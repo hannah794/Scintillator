@@ -1,4 +1,5 @@
 #include "construction.hh"
+#include "detector.hh"
 
 DetectorConstruction::DetectorConstruction()
 {
@@ -33,6 +34,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4MaterialPropertiesTable* MPT_LSO = new G4MaterialPropertiesTable();
     std::vector<G4double> photonEnergy = {2.07*eV, 3.26*eV}; // taken from emission spectrum and corresponds to wavelengths 380-600nm
     std::vector<G4double> rIndex = {1.82, 1.82}; // assuming that stable over different wavelengths
+    // std::vector<G4double> absLength = {0.5*cm, 0.5*cm}; //value for testing
     std::vector<G4double> absLength = {1.15*cm, 1.15*cm}; //assuming that stable over different wavelengths
     std::vector<G4double> scintilFast = {1.00, 1.00}; 
     MPT_LSO->AddProperty("RINDEX", photonEnergy, rIndex);
@@ -47,7 +49,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     MPT_LSO->DumpTable();
 
     // define world 
-    G4Box* worldSolid = new G4Box("worldSolid", 10*cm, 10*cm, 10*cm);
+    G4Box* worldSolid = new G4Box("worldSolid", 35*mm, 35*mm, 35*mm);
 
     G4LogicalVolume* worldLV = new G4LogicalVolume(worldSolid, Air, "worldLV");
 
@@ -67,7 +69,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     for(unsigned int i=0; i<nReplicas_x; i++){
         for(unsigned int j=0; j<nReplicas_y; j++){
-            G4VPhysicalVolume* singlePV = new G4PVPlacement(0, G4ThreeVector(-1*size_x*(nReplicas_x-1)*0.5 + i*size_x, -1*size_y*(nReplicas_y-1)*0.5 + j*size_y, 2*cm), singleLV, "singlePV", worldLV, false, i+j/25, true);
+            G4VPhysicalVolume* singlePV = new G4PVPlacement(0, G4ThreeVector(-1*size_x*(nReplicas_x-1)*0.5 + i*size_x, -1*size_y*(nReplicas_y-1)*0.5 + j*size_y, 2*cm), singleLV, "singlePV", worldLV, false, i+5*j+1, true);
         }
     }
     
@@ -81,13 +83,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     G4Box* singleSiPMSolid = new G4Box("singleSiPMSolid", SiPM_size_x/2, SiPM_size_y/2, SiPM_size_z/2);
 
-    G4LogicalVolume* singleSiPMLV = new G4LogicalVolume(singleSiPMSolid, Air, "singleSiPMLV");
+    singleSiPMLV = new G4LogicalVolume(singleSiPMSolid, Air, "singleSiPMLV");
 
     for(unsigned int i=0; i<SiPM_nReplicas_x; i++){
         for(unsigned int j=0; j<SiPM_nReplicas_y; j++){
-            G4VPhysicalVolume* singleSiPMPV = new G4PVPlacement(0, G4ThreeVector(-1*SiPM_size_x*(SiPM_nReplicas_x-1)*0.5 + i*SiPM_size_x, -1*SiPM_size_y*(SiPM_nReplicas_y-1)*0.5 + j*SiPM_size_y, 5*cm), singleSiPMLV, "singleSiPMPV", worldLV, false, i+j/16, true);
+            G4VPhysicalVolume* singleSiPMPV = new G4PVPlacement(0, G4ThreeVector(-1*SiPM_size_x*(SiPM_nReplicas_x-1)*0.5 + i*SiPM_size_x, -1*SiPM_size_y*(SiPM_nReplicas_y-1)*0.5 + j*SiPM_size_y, 32.5*mm), singleSiPMLV, "singleSiPMPV", worldLV, false, i+4*j+1, true);
         }
     }
 
     return worldPV;
 } 
+
+void DetectorConstruction::ConstructSDandField()
+{
+    SiPM* SiPMArray = new SiPM("SiPMArray");
+
+    singleSiPMLV->SetSensitiveDetector(SiPMArray);
+}

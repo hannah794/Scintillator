@@ -18,7 +18,10 @@ class DetectorConstruction : public G4VUserDetectorConstruction
         DetectorConstruction();
         ~DetectorConstruction();
     
-    virtual G4VPhysicalVolume* Construct();
+        virtual G4VPhysicalVolume* Construct();
+    private:
+        G4LogicalVolume* singleSiPMLV;
+        virtual void ConstructSDandField();
 };
 
 #endif
